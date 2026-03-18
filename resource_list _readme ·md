@@ -1,0 +1,157 @@
+# ☁️ AWS Resource List Checker
+
+> A shell script to list all active AWS resources across multiple services in any region — built for DevOps Engineers who need a quick infrastructure overview.
+
+---
+
+## 📋 Resources Covered
+
+| # | AWS Service | What it lists |
+|---|-------------|---------------|
+| 1 | EC2 | Instance ID, Type, State, IP, Name |
+| 2 | S3 | Bucket names + creation date |
+| 3 | VPC | VPC ID, CIDR, State, Name |
+| 4 | IAM | Users list |
+| 5 | RDS | DB instances + engine + status |
+| 6 | Lambda | Functions + runtime + memory |
+| 7 | EKS | Cluster names |
+| 8 | ECS | Cluster ARNs |
+| 9 | ECR | Repository names + URIs |
+| 10 | ELB/ALB/NLB | Load balancer name + type + DNS |
+| 11 | Auto Scaling | Group name + min/max/desired |
+| 12 | CloudWatch | Alarms + state |
+| 13 | Route53 | Hosted zones |
+| 14 | SNS | Topic ARNs |
+| 15 | SQS | Queue URLs |
+
+---
+
+## ⚙️ Prerequisites
+
+```bash
+# 1. AWS CLI must be installed
+aws --version
+
+# 2. AWS CLI must be configured
+aws configure --profile default
+
+# 3. Script must be executable
+chmod +x aws_resource_list.sh
+```
+
+---
+
+## 🚀 Usage
+
+```bash
+# Syntax
+./aws_resource_list.sh <aws-region> <aws-profile>
+
+# Example — us-east-1 with default profile
+./aws_resource_list.sh us-east-1 default
+
+# Example — Mumbai region with custom profile
+./aws_resource_list.sh ap-south-1 myprofile
+```
+
+---
+
+## 📸 Sample Output
+
+```
+============================================================
+         AWS RESOURCE LIST CHECKER
+         Region  : us-east-1
+         Profile : default
+         Date    : 2026-03-19 10:30:00
+============================================================
+
+[1] EC2 Instances
+------------------------------------------------------
+|  i-0abc123def  |  t3.medium  |  running  |  3.91.x.x  |  web-server  |
+------------------------------------------------------
+
+[2] S3 Buckets
+------------------------------------------------------
+|  my-terraform-state   |  2023-01-15  |
+|  my-app-assets        |  2023-06-20  |
+------------------------------------------------------
+
+...
+
+============================================================
+   AWS Resource List Check Completed Successfully!
+============================================================
+```
+
+---
+
+## 🔐 Required IAM Permissions
+
+The AWS user/role running this script needs read-only access:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:Describe*",
+        "s3:ListAllMyBuckets",
+        "iam:ListUsers",
+        "rds:Describe*",
+        "lambda:ListFunctions",
+        "eks:ListClusters",
+        "ecs:ListClusters",
+        "ecr:DescribeRepositories",
+        "elasticloadbalancing:Describe*",
+        "autoscaling:Describe*",
+        "cloudwatch:DescribeAlarms",
+        "route53:ListHostedZones",
+        "sns:ListTopics",
+        "sqs:ListQueues"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+> 💡 **Tip:** Attach `ReadOnlyAccess` AWS managed policy for simplest setup.
+
+---
+
+## 🛠️ Supported AWS Regions
+
+```bash
+us-east-1       # US East (N. Virginia)
+us-west-2       # US West (Oregon)
+ap-south-1      # Asia Pacific (Mumbai)
+ap-southeast-1  # Asia Pacific (Singapore)
+eu-west-1       # Europe (Ireland)
+# ... and all other AWS regions
+```
+
+---
+
+## 👨‍💻 Author
+
+**Siddhgopal Soni** — DevOps Engineer | AWS · Kubernetes · Terraform · CI/CD
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/siddhgopal-soni-010846b8)
+[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=flat&logo=github)](https://github.com/siddhgopal)
+
+---
+
+## 📁 Repository Structure
+
+```
+AWS-resource-list/
+├── aws_resource_list.sh   # Main script
+└── README.md              # Documentation
+```
+
+---
+
+⭐ *If this helped you, give this repo a star!*
