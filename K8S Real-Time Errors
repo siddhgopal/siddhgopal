@@ -1,0 +1,295 @@
+# ☸️ K8S Real-Time Errors — Kubernetes Troubleshooting Guide
+
+> A practical reference for DevOps Engineers facing common Kubernetes errors in production environments.
+> Built from real-world experience managing Kubernetes (EKS) workloads on AWS.
+
+---
+
+## 📋 Table of Contents
+
+1. [CrashLoopBackOff](#1-crashloopbackoff)
+2. [ImagePullBackOff](#2-imagepullbackoff)
+3. [Pod Pending](#3-pod-pending)
+4. [Failed Mount](#4-failed-mount)
+5. [Node Not Ready](#5-node-not-ready)
+6. [503 Service Unavailable](#6-503-service-unavailable-ingressload-balancer)
+7. [Resource Quota Exceeded](#7-resource-quota-exceeded)
+8. [Kubelet Logs Filling Up Disk](#8-kubelet-logs-filling-up-disk)
+9. [API Server Throttling](#9-api-server-throttling)
+10. [Pod Eviction](#10-pod-eviction)
+
+---
+
+## 1. CrashLoopBackOff
+
+**What it is:**
+Your container keeps crashing and Kubernetes tries restarting it, but it can't recover. The container starts and stops repeatedly.
+
+**Possible Causes:**
+- Misconfigured environment variables or app settings
+- Missing dependencies
+- Not enough resources (CPU, memory)
+- Bugs in your app causing it to crash
+
+**How to Fix:**
+```bash
+# Check pod logs
+kubectl logs <pod-name>
+
+# Check previous container logs (if pod restarted)
+kubectl logs <pod-name> --previous
+
+# Describe pod for events
+kubectl describe pod <pod-name>
+```
+
+---
+
+## 2. ImagePullBackOff
+
+**What it is:**
+Kubernetes can't pull the Docker image for your container. The application won't start because the image is unavailable.
+
+**Possible Causes:**
+- Incorrect image name or tag
+- Private registry credentials missing or incorrect
+- Network issues preventing access to the image registry
+
+**How to Fix:**
+```bash
+# Check pod events
+kubectl describe pod <pod-name>
+
+# Manually test image pull
+docker pull <image-name>
+
+# Verify secret for private registry
+kubectl get secret <secret-name> -o yaml
+```
+
+---
+
+## 3. Pod Pending
+
+**What it is:**
+Your Pod is stuck in the "Pending" state and won't start.
+
+**Possible Causes:**
+- Insufficient resources on available nodes (CPU, memory)
+- Resource requests for the Pod are too high
+- Node affinity or scheduling issues
+
+**How to Fix:**
+```bash
+# Check node resource availability
+kubectl describe node <node-name>
+
+# Check pod scheduling issues
+kubectl describe pod <pod-name>
+
+# Check available resources across all nodes
+kubectl top nodes
+```
+
+---
+
+## 4. Failed Mount
+
+**What it is:**
+A volume (like a persistent storage volume) can't be mounted to your Pod.
+
+**Possible Causes:**
+- No available Persistent Volume (PV) matching the claim
+- Incorrect permissions or storage class settings
+- Volume misconfiguration in YAML files
+
+**How to Fix:**
+```bash
+# Check PVC status
+kubectl get pvc
+
+# Describe PVC for errors
+kubectl describe pvc <pvc-name>
+
+# Check available PVs
+kubectl get pv
+```
+
+---
+
+## 5. Node Not Ready
+
+**What it is:**
+A node in your Kubernetes cluster is marked as "Not Ready" — it can't run any Pods.
+
+**Possible Causes:**
+- Network issues or loss of connectivity
+- Resource exhaustion (out of CPU or memory)
+- Kubelet not running properly
+
+**How to Fix:**
+```bash
+# Check node status
+kubectl describe node <node-name>
+
+# Check kubelet logs on the node
+journalctl -u kubelet
+
+# Check node resource usage
+kubectl top nodes
+```
+
+---
+
+## 6. 503 Service Unavailable (Ingress/Load Balancer)
+
+**What it is:**
+Your service is unreachable, returning a "503 Service Unavailable" error. Typically happens with Ingress controllers or Load Balancers.
+
+**Possible Causes:**
+- Misconfigured Ingress or incorrect service routing
+- Backend services or Pods not responding
+- DNS or routing issues
+
+**How to Fix:**
+```bash
+# Check ingress configuration
+kubectl describe ingress <ingress-name>
+
+# Check if backend pods are healthy
+kubectl get pods
+
+# Check service endpoints
+kubectl get endpoints <service-name>
+```
+
+---
+
+## 7. Resource Quota Exceeded
+
+**What it is:**
+You've exceeded the resource limits (CPU, memory, storage) set for your namespace — no new Pods can be created.
+
+**Possible Causes:**
+- Namespace has reached its resource limits
+- Unused resources consuming quota space
+
+**How to Fix:**
+```bash
+# Check current quota usage
+kubectl describe quota -n <namespace>
+
+# Check resource usage in namespace
+kubectl top pods -n <namespace>
+
+# Delete unused resources
+kubectl delete pod <pod-name> -n <namespace>
+```
+
+---
+
+## 8. Kubelet Logs Filling Up Disk
+
+**What it is:**
+Kubernetes logs from Kubelet and other components are filling up disk space, potentially causing system instability.
+
+**Possible Causes:**
+- Logs aren't being rotated, accumulating over time
+- High error rates or debug-level logs written frequently
+
+**How to Fix:**
+```bash
+# Check disk usage
+df -h
+
+# Check kubelet log size
+journalctl -u kubelet --disk-usage
+
+# Clear old journal logs
+journalctl --vacuum-time=2d
+```
+
+---
+
+## 9. API Server Throttling
+
+**What it is:**
+The Kubernetes API server is receiving too many requests and starts throttling — causing delays or dropped requests.
+
+**Possible Causes:**
+- Excessive or inefficient API calls from automation tools
+- API server running out of resources (CPU, memory)
+
+**How to Fix:**
+```bash
+# Monitor API server resource usage
+kubectl top nodes
+
+# Check API server logs
+kubectl logs -n kube-system <api-server-pod>
+
+# Reduce unnecessary API calls in automation scripts
+```
+
+---
+
+## 10. Pod Eviction
+
+**What it is:**
+Kubernetes evicts (removes) Pods from a node due to resource pressure — like running out of memory or disk space.
+
+**Possible Causes:**
+- Resource exhaustion (memory or disk space)
+- Pods exceeding their defined resource limits
+
+**How to Fix:**
+```bash
+# Check eviction reason
+kubectl describe pod <pod-name>
+
+# Monitor node resource usage
+kubectl top nodes
+
+# Check pod resource limits
+kubectl get pod <pod-name> -o yaml | grep -A5 resources
+```
+
+---
+
+## 🛠️ Quick Reference — Most Used Commands
+
+```bash
+# Get all pods status
+kubectl get pods -A
+
+# Get detailed pod info
+kubectl describe pod <pod-name>
+
+# Check pod logs
+kubectl logs <pod-name>
+kubectl logs <pod-name> --previous
+
+# Check node status
+kubectl get nodes
+kubectl describe node <node-name>
+
+# Check resource usage
+kubectl top nodes
+kubectl top pods
+
+# Check events in namespace
+kubectl get events --sort-by=.metadata.creationTimestamp
+```
+
+---
+
+## 👨‍💻 Author
+
+**Siddhgopal Soni** — DevOps Engineer | AWS · Kubernetes (EKS) · Terraform · CI/CD | 4+ Years
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/siddhgopal-soni-010846b8)
+[![GitHub](https://img.shields.io/badge/GitHub-siddhgopal-181717?style=flat&logo=github)](https://github.com/siddhgopal)
+
+---
+
+> ⭐ If this helped you, give the repo a star!
