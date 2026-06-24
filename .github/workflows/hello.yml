@@ -1,0 +1,22 @@
+name: First github action
+
+on: 
+  push: 
+     branch:
+       - GitHub-action-demo-2026
+
+
+jobs:
+  demo-job:
+    run-on: ubuntu-latest
+
+    steps:
+      - name: checkout code 
+        uses: actions/checkout@v4
+
+
+      - name: print current date 
+        run: date
+
+     - name: print message 
+       run: echo "Hello! github action working file !!!"
