@@ -8,15 +8,14 @@ on:
 
 jobs:
   demo-job:
-    run-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
     steps:
-      - name: checkout code 
+      - name: checkout code
         uses: actions/checkout@v4
 
-
-      - name: print current date 
+      - name: print current date
         run: date
 
-     - name: print message 
-       run: echo "Hello! github action working file !!!"
+      - name: print message
+        run: echo "Hello! github action working file !!!"
