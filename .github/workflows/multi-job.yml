@@ -3,9 +3,8 @@ name: Multi Job Practice
 on:
   push:
     branches:
-      #- main
-      #- master
-      - github-action-demo-2026
+      - master
+      #- github-action-demo-2026
 
   workflow_dispatch:
 
