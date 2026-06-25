@@ -1,0 +1,33 @@
+name: Multi Job Practice
+
+on:
+  push:
+    branches:
+      - master
+      #- github-action-demo-2026
+
+  workflow_dispatch:
+
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set-ver.outputs.version }}
+
+    steps:
+      - name: Set a version
+        id: set-ver
+        run: |
+          VERSION="1.0.${{ github.run_number }}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Version set to: ${VERSION}"
+
+  use-version:
+    runs-on: ubuntu-latest
+    needs: get-version
+
+    steps:
+      - name: Print the version from previous job
+        run: |
+          echo "Got version from previous job: ${{ needs.get-version.outputs.version }}"
+          echo "This simulates passing an image tag between build and deploy jobs"
