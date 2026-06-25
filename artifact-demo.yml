@@ -1,0 +1,44 @@
+name: Artifact Demo Pipeline
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create build file
+        run: |
+          echo "Hello from Build Job - Siddhgopal" > app.txt
+          echo "Build completed at $(date)" >> app.txt
+
+      - name: Show file content
+        run: cat app.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifact
+          path: app.txt
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
+
+      - name: Verify file
+        run: |
+          ls -la
+          cat app.txt
+
+      - name: Deploy simulation
+        run: |
+          echo "Deploying application..."
+          echo "Using file content:"
+          cat app.txt 
